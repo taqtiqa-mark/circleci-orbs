@@ -16,7 +16,10 @@ commands:
   install_chef:
     description: Installs Chef Development Kit
     parameters:
-      
+      channel:
+        description: 'Ubuntu channel: stable | current.'
+        type: string
+        default: 'stable'
       distribution:
         description: 'Ubuntu release: bionic|trusty|xenial'
         type: string
