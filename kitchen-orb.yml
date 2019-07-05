@@ -18,20 +18,19 @@ commands:
   install_chef:
     description: Installs Chef Development Kit
     parameters:
-      channel:
-        description: ChefDK channel stable or current
+      version:
+        description: ChefDK semver number 
         type: string
-        default: current
+        default: '3.2.30'
     steps:
       - run:
           name: Install Chef
           command: |
-            while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
-              sudo lsof /var/lib/dpkg/lock
-              sleep 1
-            done
-            curl -L https://omnitruck.chef.io/install.sh |
-                    sudo bash -s -- -c <<parameters.channel>> -P chefdk
+            sudo apt-get install apt-transport-https
+            wget -qO - https://packages.chef.io/chef.asc | sudo apt-key add -
+            echo "deb https://packages.chef.io/repos/apt/<CHANNEL> <DISTRIBUTION> main" > /etc/apt/sources.list.d/chef-<CHANNEL>.list
+            apt-get update
+            CHEF_LICENSE="accept" DEBIAN_FRONTEND=noninteractive apt-get install chefdk
 
 jobs:
   danger:
@@ -67,7 +66,7 @@ jobs:
         default: 1h
     environment:
       KITCHEN_LOCAL_YAML: kitchen.dokken.yml
-      CHEF_LICENSE: "accept-no-persist"
+      CHEF_LICENSE: "accept"
     steps:
       - checkout
       - install_chef:
