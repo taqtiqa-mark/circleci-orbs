@@ -156,4 +156,4 @@ jobs:
           name: Run YamlLint
           command: |
             export PATH=/home/circleci/.local/bin:$PATH
-            yamllint .
+            yamllint -d relaxed .
