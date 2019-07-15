@@ -6,6 +6,6 @@ Repository holding CircleCI Orb files for the Taqtiqa namespace.
 ```
 export ORB=kitchen
 export ORBYML=${ORB}-orb.yml
-circleci orb publish validate ${ORBYML}
+circleci orb validate ${ORBYML}
 circleci orb publish increment  ${ORBYML} taqtiqa/ ${ORB} major | minor |patch
 ```
