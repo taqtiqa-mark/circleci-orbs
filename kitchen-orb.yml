@@ -35,9 +35,9 @@ commands:
             sudo chmod 646 /etc/apt/sources.list
             echo "deb https://packages.chef.io/repos/apt/<<parameters.channel>> <<parameters.distribution>> main" |tee -a /etc/apt/sources.list
             wget -qO - https://packages.chef.io/chef.asc | sudo apt-key add -
-            apt-get update
-            apt-get install apt-transport-https
-            CHEF_LICENSE='accept' DEBIAN_FRONTEND=noninteractive apt-get install chefdk=<<parameters.version>>
+            sudo apt-get update
+            sudo apt-get install apt-transport-https
+            sudo CHEF_LICENSE='accept' DEBIAN_FRONTEND=noninteractive apt-get install chefdk=<<parameters.version>>
 
 jobs:
   danger:
