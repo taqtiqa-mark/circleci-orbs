@@ -32,13 +32,11 @@ commands:
       - run:
           name: Install Chef
           command: |
-            sudo chmod 646 /etc/apt/sources.list.d
-            sudo touch /etc/apt/sources.list.d/chef-<<parameters.channel>>.list
-            sudo chmod 646 /etc/apt/sources.list.d/chef-<<parameters.channel>>.list
-            echo "deb https://packages.chef.io/repos/apt/<<parameters.channel>> <<parameters.distribution>> main" > /etc/apt/sources.list.d/chef-<<parameters.channel>>.list
+            chmod 646 /etc/apt/sources.list
+            echo "deb https://packages.chef.io/repos/apt/<<parameters.channel>> <<parameters.distribution>> main" |tee -a /etc/apt/sources.list
             wget -qO - https://packages.chef.io/chef.asc | sudo apt-key add -
             apt-get update
-            sudo apt-get install apt-transport-https
+            apt-get install apt-transport-https
             CHEF_LICENSE='accept' DEBIAN_FRONTEND=noninteractive apt-get install chefdk=<<parameters.version>>
 
 jobs:
