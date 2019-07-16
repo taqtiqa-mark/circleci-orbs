@@ -11,10 +11,6 @@ commands:
       filename:
         description: 'Name of the file once installed (default: same as source).'
         type: string
-      directory:
-        description: 'Directory to move the file to.'
-        type: string
-        default: '/usr/local/bin'
       executable:
         description: 'Make the file executable (default: true).'
         type: boolean
@@ -52,7 +48,6 @@ commands:
             # Read parameters
             url="<< parameters.url >>"
             fileName="<< parameters.filename >>"
-            fileDest=<< parameters.directory >>
             makeExec=<< parameters.executable >>
             checksum="<< parameters.checksum >>"
             checksumProgram=<< parameters.command >>
