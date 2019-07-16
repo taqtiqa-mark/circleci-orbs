@@ -1,0 +1,116 @@
+---
+version: 2.1
+
+commands:
+  get-pkg-check-install:
+    description: 'Download package, checksum, install.'
+    parameters:
+      url:
+        description: 'URL of the file.' 
+        type: string
+      filename:
+        description: 'Name of the file once installed (default: same as source).'
+        type: string
+      directory:
+        description: 'Directory to move the file to.'
+        type: string
+        default: '/usr/local/bin'
+      executable:
+        description: 'Make the file executable (default: true).'
+        type: boolean
+        default: true
+      checksum:
+        description: 'File checksum.'
+        type: string
+      command:
+        description: 'Command to check file checksum.'
+        type: string
+        default: 'sha1sum'
+    steps:
+      - run: |
+            # OS checks
+            osName="$(awk -F'=' '$1 == "ID" { print $2 }' /etc/os-release)"
+            case "$osName" in
+              debian|ubuntu)
+                packCmdPre="apt-get update -qq"
+                packCmdInst="apt-get install -qq --no-install-recommends"
+                packCmdDel="apt-get purge --auto-remove -qq"
+                packCmdClean="rm -rf /var/lib/apt/lists/*"
+                ;;
+              alpine)
+                packCmdPre=":"
+                packCmdInst="apk --no-cache add"
+                packCmdDel="apk del"
+                packCmdClean=":"
+                ;;
+              *)
+                echo "error: OS $osName unsupported" >&2
+                exit 1
+                ;;
+            esac
+
+            # Read parameters
+            url="<< parameters.url >>"
+            fileName="<< parameters.filename >>"
+            fileDest=<< parameters.directory >>
+            makeExec=<< parameters.executable >>
+            checksum="<< parameters.checksum >>"
+            checksumProgram=<< parameters.command >>
+
+            if [ -z "${url:-}" ]; then
+              echo "error: Option -u is required" >&2
+              exit 1
+            fi
+
+            # Install curl if required
+            which curl 2>&1 >/dev/null && curlPresent=true
+            if [ -z "${curlPresent:-}" ]; then
+              $packCmdPre >/dev/null
+              $packCmdInst curl >/dev/null
+            fi
+
+            # Install ca-certificates if required
+            scheme=$(echo $url | awk -F ":" '{print $1}')
+            which update-ca-certificates 2>&1 >/dev/null && caCertsPresent=true
+            if [ "${scheme:-}" = "https" -a -z "${caCertsPresent:-}" ]; then
+              $packCmdPre >/dev/null
+              $packCmdInst ca-certificates >/dev/null
+            fi
+
+            # Set file name if unset
+            if [ -z "${fileName:-}" ]; then
+              fileName=$(echo $url | awk -F "/" '{print $NF}' | awk -F "?" '{print $1}')
+            fi
+
+            # Create tmpdir to download file
+            tmpdir=$(mktemp -d)
+            cd "$tmpdir"
+
+            # Get file passed as URL
+            curl -fsSL "$url" -o "$fileName"
+            if [ ! -z "${makeExec:-}" ]; then
+              chmod +x "$fileName"
+            fi
+
+            # Verify checksum if passed as option
+            if [ ! -z "${checksum:-}" ]; then
+              echo "$checksum  $fileName" | "$checksumProgram" -c -
+            fi
+
+            # Install file and delete tmpdir
+            $packCmdPre >/dev/null
+            $packCmdInst $fileName >/dev/null
+            cd - >/dev/null
+            rm -rf "$tmpdir"
+
+            # Uninstall curl if we installed it earlier
+            if [ -z "${curlPresent:-}" ]; then
+              $packCmdDel curl >/dev/null
+              $packCmdClean
+            fi
+
+            # Uninstall ca-certificates if we installed it earlier
+            if [ -z "${caCertsPresent:-}" ]; then
+              $packCmdDel ca-certificates >/dev/null
+              $packCmdClean
+            fi
