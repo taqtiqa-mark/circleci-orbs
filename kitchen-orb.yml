@@ -32,7 +32,7 @@ commands:
       - run:
           name: Install Chef
           command: |
-            chmod 646 /etc/apt/sources.list
+            sudo chmod 646 /etc/apt/sources.list
             echo "deb https://packages.chef.io/repos/apt/<<parameters.channel>> <<parameters.distribution>> main" |tee -a /etc/apt/sources.list
             wget -qO - https://packages.chef.io/chef.asc | sudo apt-key add -
             apt-get update
