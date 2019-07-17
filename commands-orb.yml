@@ -95,6 +95,9 @@ commands:
             tmpdir=$(mktemp -d)
             cd "$tmpdir"
 
+            # Download file from URL.
+            curl -fsSL "$url" -o "$fileName"
+
             # Verify checksum if passed as option
             if [ ! -z "${checksum:-}" ]; then
               echo "$checksum  $fileName" | "$checksumProgram" -c -
