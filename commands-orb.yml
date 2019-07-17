@@ -14,8 +14,10 @@ examples:
           machine: true
           steps:
             - cmds/get-pkg-check-install:
-                url: "https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.deb"
-                checksum: "415f50b93235e761db284c761f6a8240a6ef6762ee3ec7ff869d2bccb1a1cdf7"
+                url: 'https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.deb'
+                checksum: '415f50b93235e761db284c761f6a8240a6ef6762ee3ec7ff869d2bccb1a1cdf7'
+                verify_command: 'vagrant'
+    result:
 
 commands:
   get-pkg-check-install:
@@ -27,10 +29,14 @@ commands:
       checksum:
         description: 'File checksum.'
         type: string
-      command:
+      checksum_command:
         description: 'Command to check file checksum.'
         type: string
         default: 'sha1sum'
+      verify_command:
+        description: 'Command to verify the installation.'
+        type: string
+        default: "echo 'You should verify installation of:' && echo '<< parameters.url >>'"
     steps:
       - run: |
             # OS check
@@ -57,7 +63,8 @@ commands:
             # Read parameters
             url="<< parameters.url >>"
             checksum="<< parameters.checksum >>"
-            checksumProgram=<< parameters.command >>
+            checksumProgram=<< parameters.checksum_command >>
+            verifyProgram=<< parameters.verify_command >>
 
             if [ -z "${url:-}" ]; then
               echo "error: Option -u is required" >&2
@@ -110,3 +117,6 @@ commands:
               $packCmdDel ca-certificates >/dev/null
               $packCmdClean
             fi
+
+            # Verify installation
+            $verifyProgram
