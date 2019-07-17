@@ -1,5 +1,21 @@
 ---
 version: 2.1
+description: Reusable Commands
+
+examples:
+  package_install:
+    description: Download and install a deb package.
+    usage: 
+      version: 2.1
+      orbs:
+        cmds: taqtiqa/commands@0.1.1
+      jobs:
+        vagrant: 
+          machine: true
+          steps:
+            - cmds/get-pkg-check-install:
+                url: "https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.deb"
+                checksum: "415f50b93235e761db284c761f6a8240a6ef6762ee3ec7ff869d2bccb1a1cdf7"
 
 commands:
   get-pkg-check-install:
@@ -8,13 +24,6 @@ commands:
       url:
         description: 'URL of the file.' 
         type: string
-      filename:
-        description: 'Name of the file once installed (default: same as source).'
-        type: string
-      executable:
-        description: 'Make the file executable (default: true).'
-        type: boolean
-        default: true
       checksum:
         description: 'File checksum.'
         type: string
@@ -24,7 +33,7 @@ commands:
         default: 'sha1sum'
     steps:
       - run: |
-            # OS checks
+            # OS check
             osName="$(awk -F'=' '$1 == "ID" { print $2 }' /etc/os-release)"
             case "$osName" in
               debian|ubuntu)
@@ -47,8 +56,6 @@ commands:
 
             # Read parameters
             url="<< parameters.url >>"
-            fileName="<< parameters.filename >>"
-            makeExec=<< parameters.executable >>
             checksum="<< parameters.checksum >>"
             checksumProgram=<< parameters.command >>
 
@@ -80,12 +87,6 @@ commands:
             # Create tmpdir to download file
             tmpdir=$(mktemp -d)
             cd "$tmpdir"
-
-            # Get file passed as URL
-            curl -fsSL "$url" -o "$fileName"
-            if [ ! -z "${makeExec:-}" ]; then
-              chmod +x "$fileName"
-            fi
 
             # Verify checksum if passed as option
             if [ ! -z "${checksum:-}" ]; then
