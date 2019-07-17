@@ -5,12 +5,12 @@ description: Reusable Commands
 examples:
   package_install:
     description: Download and install a deb package.
-    usage: 
+    usage:
       version: 2.1
       orbs:
         cmds: taqtiqa/commands@0.1.1
       jobs:
-        vagrant: 
+        vagrant:
           machine: true
           steps:
             - cmds/get-pkg-check-install:
@@ -24,7 +24,7 @@ commands:
     description: 'Download package, checksum, install.'
     parameters:
       url:
-        description: 'URL of the file.' 
+        description: 'URL of the file.'
         type: string
       checksum:
         description: 'File checksum.'
