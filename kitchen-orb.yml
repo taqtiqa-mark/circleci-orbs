@@ -32,6 +32,13 @@ commands:
       - run:
           name: Install Chef
           command: |
+            while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+              sudo lsof /var/lib/dpkg/lock
+              tail /var/log/unattended-upgrades/unattended-upgrades-dpkg.log || true
+              killall apt-get || true
+              killall dpkg || true
+              sleep 1
+            done
             sudo chmod 646 /etc/apt/sources.list
             echo "deb https://packages.chef.io/repos/apt/<<parameters.channel>> <<parameters.distribution>> main" |tee -a /etc/apt/sources.list
             wget -qO - https://packages.chef.io/chef.asc | sudo apt-key add -
@@ -71,9 +78,9 @@ jobs:
       timeout:
         description: Set the command timeout
         type: string
-        default: 1h
+        default: 2h
     environment:
-      KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+      KITCHEN_LOCAL_YAML: kitchen.yml
       CHEF_LICENSE: "accept"
     steps:
       - checkout
@@ -126,7 +133,7 @@ jobs:
         type: string
         default: current
     environment:
-      KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+      KITCHEN_LOCAL_YAML: kitchen.yml
       CHEF_LICENSE: "accept-no-persist"
     steps:
       - checkout

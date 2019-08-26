@@ -8,15 +8,15 @@ examples:
     usage:
       version: 2.1
       orbs:
-        cmds: taqtiqa/commands@0.1.1
+        cmds: taqtiqa/commands@0.1.14
       jobs:
         vagrant:
           machine: true
           steps:
             - cmds/get-pkg-check-install:
                 url: 'https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.deb'
-                checksum: '415f50b93235e761db284c761f6a8240a6ef6762ee3ec7ff869d2bccb1a1cdf7'
-                verify_command: 'vagrant'
+                checksum: '2bfbecb6cd75f1b97fa9c10264d2e2fb6c428313'
+                verify_command: '/usr/bin/vagrant'
     result:
 
 commands:
@@ -39,19 +39,39 @@ commands:
         default: "echo 'You should verify installation of:' && echo '<< parameters.url >>'"
     steps:
       - run: |
+            set -e
+            pkg_wait() {
+                # Stop all apt daily service related instances
+                sudo systemctl stop apt-daily.service
+                sudo systemctl kill --kill-who=all apt-daily.service
+
+                # wait until `apt-get updated` has been killed
+                while ! (sudo systemctl list-units --all apt-daily.service | egrep -q '(dead|failed)')
+                do
+                  sleep 1;
+                done
+                while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+                  sudo lsof /var/lib/dpkg/lock
+                  tail /var/log/unattended-upgrades/unattended-upgrades-dpkg.log || true
+                  killall apt-get || true
+                  killall dpkg || true
+                  sleep 1
+                done;
+              }
             # OS check
             osName="$(awk -F'=' '$1 == "ID" { print $2 }' /etc/os-release)"
             case "$osName" in
               debian|ubuntu)
-                packCmdPre="apt-get update -qq"
-                packCmdInst="apt-get install -qq --no-install-recommends"
-                packCmdDel="apt-get purge --auto-remove -qq"
-                packCmdClean="rm -rf /var/lib/apt/lists/*"
+                packCmdPreWait="while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do; sleep 1; done;"
+                packCmdPre="pkg_wait && sudo apt-get update -qq"
+                packCmdInst="pkg_wait && sudo apt-get install -qq --no-install-recommends"
+                packCmdDel="pkg_wait && sudo apt-get purge --auto-remove -qq"
+                packCmdClean="sudo rm -rf /var/lib/apt/lists/*"
                 ;;
               alpine)
                 packCmdPre=":"
-                packCmdInst="apk --no-cache add"
-                packCmdDel="apk del"
+                packCmdInst="sudo apk --no-cache add"
+                packCmdDel="sudo apk del"
                 packCmdClean=":"
                 ;;
               *)
