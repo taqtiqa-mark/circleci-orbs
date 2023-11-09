@@ -1,0 +1,18 @@
+repo_name: taqtiqa-mark/circleci-orbs
+report_id: e6ee471ea26d36de87be772cfb681289
+repo_type: Public
+timestamp: '2023-11-09T21:09:36+00:00'
+requested_by: taqtiqa-mark
+provider: github
+branch: master
+detected_tools_count: 1
+tools:
+- name: Git
+  description: Fast, scalable, distributed revision control system
+  website_url: http://git-scm.com/
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Version Control System
+  image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source: Repo Metadata
