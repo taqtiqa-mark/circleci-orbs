@@ -1,7 +1,8 @@
 repo_name: taqtiqa-mark/circleci-orbs
 report_id: e6ee471ea26d36de87be772cfb681289
+version: 0.1
 repo_type: Public
-timestamp: '2023-11-09T21:09:36+00:00'
+timestamp: '2024-01-04T15:14:58+00:00'
 requested_by: taqtiqa-mark
 provider: github
 branch: master
@@ -15,4 +16,5 @@ tools:
   category: Build, Test, Deploy
   sub_category: Version Control System
   image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/taqtiqa-mark/circleci-orbs
   detection_source: Repo Metadata
